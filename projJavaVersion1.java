@@ -7,34 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * SOUTENANCE PLANNING SYSTEM — FIXED VERSION
- *
- * RULES RESPECTED:
- * ✅ No double booking (professor cannot be in two rooms at the same slot)
- * ✅ Jury != Encadrant
- * ✅ Jury1 != Jury2
- * ✅ 1 slot resting time between JURY assignments only
- * ✅ Balanced workload
- * ✅ Same professor cannot appear twice in same slot
- *
- * FIX APPLIED:
- * ─────────────────────────────────────────────────────────────────────────────
- * BEFORE (broken): A single `occupied` map stored ALL assignments (encadrant +
- * jury). The rest constraint |s - slot| <= 1 was applied to encadrant slots
- * too. With 21 encadrants filling slots 0 and 1, ALL professors were blocked
- * from jury duty at slot 1 via the rest rule → NO AVAILABLE PROF.
- *
- * AFTER (fixed): Two separate maps:
- *   - encadrantSlots: tracks only the encadrant role
- *   - jurySlots:      tracks only jury roles
- *
- * The "same slot" conflict check uses BOTH maps (a prof can't be in two places
- * at once regardless of role). But the "rest time" check ONLY looks at jurySlots
- * (a prof who is an encadrant at slot 0 is still available as a jury at slot 1
- * because attending your own student's defence doesn't count as a jury shift).
- * ─────────────────────────────────────────────────────────────────────────────
- */
 public class projJavaVersion1 {
 
     // ─────────────────────────────────────────────
@@ -82,16 +54,10 @@ public class projJavaVersion1 {
     // ─────────────────────────────────────────────
 
     private final List<String> allProfs = new ArrayList<>();
-
-    // ── FIX: two separate occupation maps ─────────────────────────────────────
-
-    // prof → slots where they appear as ENCADRANT  (used for: same-slot conflict only)
     private final Map<String, Set<String>> encadrantSlots = new HashMap<>();
 
-    // prof → slots where they appear as JURY        (used for: same-slot conflict + rest time)
     private final Map<String, Set<String>> jurySlots = new HashMap<>();
 
-    // prof -> workload (total participations: encadrant + jury combined)
     private final Map<String, Integer> load = new HashMap<>();
 
     // ─────────────────────────────────────────────
@@ -107,9 +73,6 @@ public class projJavaVersion1 {
         int days = (int) Math.ceil((double) total / MAX_DAY);
 
         assignPositions(queue, days);
-
-        // VERY IMPORTANT: register encadrants first so they are blocked
-        // from appearing in two rooms at the same slot
         registerEncadrants(queue);
 
         assignJuries(queue);
@@ -160,13 +123,6 @@ public class projJavaVersion1 {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // REGISTER ENCADRANTS
-    // Records each prof's encadrant slot into encadrantSlots.
-    // This blocks them from being assigned as a jury member
-    // in that SAME slot (two rooms at once), but does NOT
-    // trigger the rest-time check for adjacent slots.
-    // ─────────────────────────────────────────────
 
     private void registerEncadrants(List<Soutenance> queue) {
 
@@ -241,27 +197,7 @@ public class projJavaVersion1 {
         return candidates.get(0);
     }
 
-    // ─────────────────────────────────────────────
-    // AVAILABILITY CHECK  ← THE KEY FIX IS HERE
-    //
-    // Three independent checks:
-    //
-    // 1. SAME-SLOT ENCADRANT CONFLICT
-    //    Is this prof already an encadrant somewhere at (day, slot)?
-    //    → They cannot physically be in another room. Blocked.
-    //
-    // 2. SAME-SLOT JURY CONFLICT
-    //    Is this prof already on a jury somewhere at (day, slot)?
-    //    → Same physical impossibility. Blocked.
-    //
-    // 3. JURY REST TIME
-    //    Is this prof on a jury in an ADJACENT slot on the same day?
-    //    → |prevJurySlot - slot| <= 1 → Blocked.
-    //    NOTE: encadrant slots do NOT contribute to rest time.
-    //    A prof being an encadrant at slot 0 stays available as
-    //    jury at slot 1 — their own supervision is not a jury shift.
-    // ─────────────────────────────────────────────
-
+   
     private boolean isAvailable(String prof, int day, int slot) {
 
         String target = slotKey(day, slot);
