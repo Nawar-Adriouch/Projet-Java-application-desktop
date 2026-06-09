@@ -29,14 +29,10 @@ public class Soutenance {
     public Salle getSalle(){return salle ;}
     public Creneau getCreneau(){return creneau;}
     
-    @Override
-    public String toString() {
-        return etudiant.getNom() + " | " +
-                encadrant.getNom() + " | " +
-                jury1.getNom() + " | " +
-                jury2.getNom() + " | " +
-                salle.getNom() + " | " +
-                creneau.toString();
+
+    public String toStrin(){
+        return etudiant+" "+encadrant+" "+jury1+" "+jury2+" "+salle+" "+creneau;
     }
+
 
     }

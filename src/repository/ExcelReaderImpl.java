@@ -15,7 +15,6 @@ public class ExcelReaderImpl implements ExcelReader {
 
     private final String cheminFichier;
 
-
     private List<Etudiant>   etudiants;
     private List<Professeur> professeurs;
     private List<Salle>      salles;

@@ -27,23 +27,14 @@ public class FicheEvaluation {
     public Professeur getJury2(){return jury2;}
 
     public String toString(){
-        return
-                "___________________________________\n"+
-                        "Fiche d'évoluation "+
-                        "______________________________\n"+
-                        "Etudiant           :        "+etudiant.getNom()+"  "+etudiant.getPrenom()+"\n\n"+
-                        "Sujet de Soutenance:        "+etudiant.getSujet()+"\n\n"+
-                        "Filière            :        "+etudiant.getFiliere()+"\n\n"+
-                        "Encadrant          :        "+encadrant.getNom()+"  "+encadrant.getPrenom()+"\n\n"+
-                        "Jury 1             :        "+jury1.getNom()+"  "+jury1.getPrenom()+"\n\n"+
-                        "Jury 2             :        "+jury2.getNom()+"  "+jury2.getNom()+"\n\n"+
-                        "Salle              :        "+salle.getNom()+ "\n\n"+
-                        "Date               :        "+creneau.getDate()+"\n\n"+
-                        "Heure debut        :        "+creneau.getHeureDebut()+"\n\n"+
-                        "Heure Fin          :        "+creneau.getHeureFin()+"\n\n"+
-                        "Note               : _____________________________________\n\n"+
-                        "Remarques          : __________________________________________\n\n" +
-                        "                     ____________________________________________\n\n";
+        return etudiant.getNom()+"  "+etudiant.getPrenom()+ " "+etudiant.getSujet()+" "+
+                        etudiant.getFiliere()+" "+
+                        encadrant.getNom()+"  "+encadrant.getPrenom()+" "+
+                        jury1.getNom()+"  "+jury1.getPrenom()+" "+
+                        jury2.getNom()+"  "+jury2.getNom()+" "+
+                        salle.getNom()+ " "+
+                        creneau.getDate()+" "+
+                        creneau.getHeureDebut()+" "+creneau.getHeureFin();
 
     }
 

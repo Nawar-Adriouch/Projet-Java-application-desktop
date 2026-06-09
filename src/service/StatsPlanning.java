@@ -65,29 +65,52 @@ public class StatsPlanning {
     //    + la map détaillée nom → count jury
     // ─────────────────────────────────────────────
     public static Map<String, Integer> chargeJurys(Planning planning) {
-        Map<String, Integer> juryCount = new LinkedHashMap<>();
+        // Clé = ID du prof (unique) → évite les collisions sur nom+prénom
+        Map<String, Integer> countParId   = new LinkedHashMap<>();
+        Map<String, String>  nomParId     = new LinkedHashMap<>();
+
         for (Soutenance s : planning.getSoutenances()) {
             for (Professeur p : List.of(s.getJury1(), s.getJury2())) {
-                String key = p.getNom() + " " + p.getPrenom();
-                juryCount.put(key, juryCount.getOrDefault(key, 0) + 1);
+                String id  = p.getId();
+                String nom = p.getNom() + " " + p.getPrenom();
+                countParId.put(id,  countParId.getOrDefault(id, 0) + 1);
+                nomParId.put(id, nom);
             }
         }
-        return juryCount;
+
+        // Retourner nom → count (pour l'affichage)
+        Map<String, Integer> result = new LinkedHashMap<>();
+        for (String id : countParId.keySet()) {
+            result.put(nomParId.get(id), countParId.get(id));
+        }
+        return result;
     }
 
     public static Map<String, Integer> ecartJurys(Planning planning) {
-        Map<String, Integer> juryCount = chargeJurys(planning);
-        if (juryCount.isEmpty()) return Map.of("max", 0, "min", 0, "ecart", 0, "moyenne", 0);
+        // Calcul de l'écart sur les jurys (jury1 + jury2 uniquement)
+        // Clé interne = ID pour éviter les collisions
+        Map<String, Integer> countParId = new LinkedHashMap<>();
 
-        int max = Collections.max(juryCount.values());
-        int min = Collections.min(juryCount.values());
-        int total = juryCount.values().stream().mapToInt(Integer::intValue).sum();
-        int moyenne = juryCount.isEmpty() ? 0 : total / juryCount.size();
+        for (Soutenance s : planning.getSoutenances()) {
+            for (Professeur p : List.of(s.getJury1(), s.getJury2())) {
+                String id = p.getId();
+                countParId.put(id, countParId.getOrDefault(id, 0) + 1);
+            }
+        }
+
+        if (countParId.isEmpty())
+            return Map.of("max", 0, "min", 0, "ecart", 0, "moyenne", 0);
+
+        int max     = Collections.max(countParId.values());
+        int min     = Collections.min(countParId.values());
+        int total   = countParId.values().stream().mapToInt(Integer::intValue).sum();
+        int moyenne = total / countParId.size();
+        int ecart   = max - min; // ← différence réelle entre le plus chargé et le moins chargé
 
         Map<String, Integer> result = new LinkedHashMap<>();
-        result.put("max", max);
-        result.put("min", min);
-        result.put("ecart", max - min);
+        result.put("max",     max);
+        result.put("min",     min);
+        result.put("ecart",   ecart);
         result.put("moyenne", moyenne);
         return result;
     }

@@ -11,7 +11,7 @@ public class Affectation {
             List<Professeur> professeurs) {
 
         if (professeurs == null) {
-            throw new IllegalArgumentException("La liste des professeurs est null");
+            throw new IllegalArgumentException("La liste des professeurs est vide");
         }
         if(etudiants==null){
             throw new IllegalArgumentException("La liste des étudiants est null");

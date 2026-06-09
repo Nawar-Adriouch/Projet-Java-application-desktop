@@ -9,44 +9,54 @@ import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
+
 public class MainWindow extends JFrame {
 
-    // ── Déclaration des panels (niveau classe, pas dans le constructeur)
-    private StatsPanel statsPanel;
+    private AccueilPanel     accueilPanel;
     private AffectationPanel affectationPanel;
+    private PlanningPanel    planningPanel;
+    private StatsPanel       statsPanel;
+    private JTabbedPane      tabs;
 
     public MainWindow() {
-        super("Gestion de soutenances - Menu principal");
+        super("Gestion de soutenances");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1200, 750);
+        setSize(1300, 800);
         setLocationRelativeTo(null);
 
-        // ── Initialisation des panels
-        statsPanel       = new StatsPanel();
+        accueilPanel     = new AccueilPanel(this::onPlanningGenere);
         affectationPanel = new AffectationPanel();
+        planningPanel    = new PlanningPanel();
+        statsPanel       = new StatsPanel();
 
-        // ── Onglets
-        JTabbedPane tabs = new JTabbedPane(SwingConstants.TOP);
-        tabs.add("Affectation",  affectationPanel);
-        tabs.add("Statistiques", statsPanel);
-        // PlanningPanel sera ajouté plus tard
+        tabs = new JTabbedPane(SwingConstants.TOP);
+        tabs.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tabs.addTab("Accueil",       accueilPanel);
+        tabs.addTab("Affectation",   affectationPanel);
+        tabs.addTab("Planning",      planningPanel);
+        tabs.addTab("Statistiques",  statsPanel);
 
         add(tabs, BorderLayout.CENTER);
         setVisible(true);
     }
 
-    // ── Méthodes publiques appelées depuis Main.java ──────────
+    private void onPlanningGenere() {
+        Planning planning                      = accueilPanel.getPlanning();
+        Map<Encadrant, List<Etudiant>> affect  = accueilPanel.getAffectation();
+
+        if (affect   != null) affectationPanel.setAffectation(affect);
+        if (planning != null) planningPanel.setPlanning(planning);
+        if (planning != null) statsPanel.setPlanning(planning);
+
+        tabs.setSelectedIndex(2);
+    }
 
     public void setPlanning(Planning planning) {
+        planningPanel.setPlanning(planning);
         statsPanel.setPlanning(planning);
     }
 
     public void setAffectation(Map<Encadrant, List<Etudiant>> affectation) {
         affectationPanel.setAffectation(affectation);
-    }
-
-    // ── Point d'entrée (optionnel, le vrai main est dans Main.java)
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainWindow());
     }
 }

@@ -31,4 +31,12 @@ public class Professeur {
 
         return "anglais".equalsIgnoreCase(this.specialite);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Professeur)) return false;
+        return this.id.equals(((Professeur) o).id);
+    }
+
 }
