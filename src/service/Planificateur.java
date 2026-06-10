@@ -54,37 +54,20 @@ public class Planificateur {
         charge.put(p, charge.getOrDefault(p, 0) + 1);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  SCORE
-    //
-    //  La contrainte langue fonctionne ainsi :
-    //
-    //  - Si soutenance anglophone ET prof anglophone → score -50 (priorité haute)
-    //    → un prof anglophone sera TOUJOURS préféré pour une soutenance anglophone
-    //
-    //  - Si soutenance française ET prof anglophone → score +30 (pénalité)
-    //    → on évite de "gâcher" un prof anglophone sur une soutenance française
-    //    → il sera quand même utilisé si aucun autre n'est dispo
-    //
-    //  Ce n'est PAS un filtre dur : la soutenance peut avoir lieu même
-    //  sans jury anglophone si aucun n'est disponible.
-    // ═══════════════════════════════════════════════════════════════════
+
     public int scoreProfesseur(Professeur p, Etudiant e, Creneau c, Encadrant encadrant) {
 
-        // Exclusions absolues
         if (p.getId().equals(encadrant.getId())) return Integer.MAX_VALUE;
         if (!estDisponible(p, c))                return Integer.MAX_VALUE;
 
         int score = 0;
 
-        // Équilibrage de charge
         score += charge.getOrDefault(p, 0) * 10;
 
-        // ── Contrainte langue ─────────────────────────────────────────
-        if (e.isAnglophone() && p.estAnglais())   score -= 50; // priorité : placer les anglophones sur les soutenances anglaises
-        if (!e.isAnglophone() && p.estAnglais())  score += 30; // réserver les anglophones pour les soutenances anglaises
 
-        // Pénalité créneaux successifs
+        if (e.isAnglophone() && p.estAnglais())   score -= 50;
+        if (!e.isAnglophone() && p.estAnglais())  score += 30;
+
         for (Soutenance s : planning.getSoutenances()) {
             if (s.getCreneau().estSuccessif(c) &&
                     (s.getJury1().getId().equals(p.getId())    ||
@@ -97,9 +80,6 @@ public class Planificateur {
         return score;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  SÉLECTION DU JURY
-    // ═══════════════════════════════════════════════════════════════════
     public List<Professeur> chercherJuryEquitable(Etudiant e, Creneau c, Encadrant encadrant) {
 
         List<Professeur> candidats = new ArrayList<>();
@@ -110,7 +90,6 @@ public class Planificateur {
             candidats.add(p);
         }
 
-        // Le score s'occupe de la priorité langue — pas besoin de filtre dur ici
         candidats.sort(Comparator.comparingInt(p -> scoreProfesseur(p, e, c, encadrant)));
 
         List<Professeur> jurys = new ArrayList<>();
@@ -122,9 +101,7 @@ public class Planificateur {
         return jurys;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  PLANIFICATION
-    // ═══════════════════════════════════════════════════════════════════
+
     public Planning plannifier(Map<Encadrant, List<Etudiant>> affectation) {
         initialiserModele(affectation);
         Planning meilleurPlanning = null;
@@ -184,15 +161,13 @@ public class Planificateur {
                 }
 
                 if (!planifie)
-                    System.out.println("⚠ Non planifié : " + e.getNom());
+                    System.out.println("Non planifié : " + e.getNom());
             }
         }
         return planning;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  DISPONIBILITÉ
-    // ═══════════════════════════════════════════════════════════════════
+
     public boolean estDisponible(Professeur p, Creneau c) {
         for (Soutenance s : planning.getSoutenances()) {
             boolean estDedans =

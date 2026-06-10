@@ -21,7 +21,7 @@ public class PdfPlanningWriter {
     private static final float MARGIN  = 30f;
     private static final float TABLE_W = PAGE_W - 2 * MARGIN;
 
-    //  Couleurs RGB (0..1)
+
     private static final float[] VERT_TITRE   = {0.11f, 0.37f, 0.13f};
     private static final float[] VERT_ENTETE  = {0.18f, 0.49f, 0.20f};
     private static final float[] VERT_CLAIR   = {0.91f, 0.96f, 0.91f};
@@ -30,7 +30,7 @@ public class PdfPlanningWriter {
     private static final float[] NOIR         = {0.13f, 0.13f, 0.13f};
     private static final float[] BORDURE      = {0.78f, 0.90f, 0.79f};
 
-    // Colonnes : label + largeur (% de TABLE_W)
+    // Colonnes : label + largeur
     private static final String[] COL_LABELS = {
             "N°", "Date", "Début", "Fin", "Étudiant", "Encadrant", "Jury 1", "Jury 2", "Salle"
     };
@@ -38,7 +38,7 @@ public class PdfPlanningWriter {
             0.04f, 0.10f, 0.07f, 0.07f, 0.18f, 0.16f, 0.16f, 0.16f, 0.06f
     };
 
-    //  Hauteurs
+
     private static final float H_TITRE   = 44f;
     private static final float H_SOUS    = 22f;
     private static final float H_ENTETE  = 26f;
@@ -59,7 +59,6 @@ public class PdfPlanningWriter {
 
         try (PDDocument doc = new PDDocument()) {
 
-            // Précalcul des largeurs de colonnes en pixels
             float[] colW = new float[COL_PCTS.length];
             for (int i = 0; i < COL_PCTS.length; i++)
                 colW[i] = TABLE_W * COL_PCTS[i];
@@ -68,7 +67,7 @@ public class PdfPlanningWriter {
             float yDebutDonnees = PAGE_H - MARGIN - H_TITRE - H_SOUS - 8 - H_ENTETE;
             int lignesParPage   = (int) ((yDebutDonnees - MARGIN - H_PIED) / H_LIGNE);
 
-            // Découpage en pages
+            // Decoupage en pages
             int totalPages = (int) Math.ceil((double) liste.size() / lignesParPage);
 
             for (int page = 0; page < totalPages; page++) {
@@ -93,7 +92,7 @@ public class PdfPlanningWriter {
 
                     y -= 4;
 
-                    //  En-tête du tableau
+                    // En-tête du tableau
                     y = dessinerEnteteTableau(cs, y, colW);
 
                     // Lignes de données
@@ -103,16 +102,13 @@ public class PdfPlanningWriter {
                         y = dessinerLigneSoutenance(cs, y, debut + i + 1, s, colW, alt);
                     }
 
-                    // Pied de page
-                    dessinerPiedDePage(cs, page + 1, totalPages,
-                            "Planning des Soutenances  •  Généré le " +
-                                    java.time.LocalDate.now().format(FMT_DATE));
+
                 }
             }
 
             doc.save(cheminSortie);
             System.out.println("Planning PDF " + cheminSortie
-                    + " (" + liste.size() + " soutenances, " + totalPages + " page(s))");
+                    + " (" + liste.size() + " soutenances, " + totalPages + " pages)");
         }
     }
 
@@ -134,7 +130,7 @@ public class PdfPlanningWriter {
         // Sous-titre
         rempli(cs, MARGIN, y - H_SOUS, TABLE_W, H_SOUS, VERT_ENTETE);
         texte(cs, fontNormal, 10, BLANC,
-                "Total : " + total + " soutenance(s)   •   Généré le "
+                "Total : " + total + " soutenances  Généré le "
                         + java.time.LocalDate.now().format(FMT_DATE),
                 MARGIN + 10, y - H_SOUS + 7);
 
@@ -147,7 +143,7 @@ public class PdfPlanningWriter {
         float h = 28f;
         rempli(cs, MARGIN, y - h, TABLE_W, h, VERT_TITRE);
         texte(cs, fontBold, 13, BLANC,
-                "PLANNING DES SOUTENANCES  (suite)  —  Page " + page + "/" + total,
+                "PLANNING DES SOUTENANCES Page " + page + "/" + total,
                 MARGIN + 10, y - h + 9);
         return y - h;
     }
@@ -162,7 +158,7 @@ public class PdfPlanningWriter {
             texte(cs, fontBold, 9, BLANC,
                     tronquer(COL_LABELS[i], fontBold, 9, colW[i] - 4),
                     x + 3, y - H_ENTETE + 9);
-            // Séparateur vertical
+
             trait(cs, x, y, x, y - H_ENTETE, BLANC, 0.4f);
             x += colW[i];
         }
@@ -218,7 +214,7 @@ public class PdfPlanningWriter {
     }
 
 
-    //  HELPERS GRAPHIQUES
+
 
     private void rempli(PDPageContentStream cs, float x, float y,
                         float w, float h, float[] c) throws IOException {

@@ -3,158 +3,185 @@ package service;
 import model.*;
 import java.time.LocalDate;
 import java.util.*;
-import model.Planning;
-import model.Soutenance;
-import model.Professeur;
 
 public class StatsPlanning {
 
-    // ─────────────────────────────────────────────
-    // 1. CHARGE PAR PROFESSEUR
-    //    Retourne : nom complet → nombre total de soutenances (enc + jury)
-    // ─────────────────────────────────────────────
+
+    //charge professeur
+
     public static Map<String, Integer> chargeParProf(Planning planning) {
-        Map<String, Integer> total = new LinkedHashMap<>();
+        Map<String, Integer> countParId = new LinkedHashMap<>();
+        Map<String, String> nomParId = new LinkedHashMap<>();
+
         for (Soutenance s : planning.getSoutenances()) {
-            List<Professeur> profs = List.of(
-                    s.getEncadrant(), s.getJury1(), s.getJury2()
-            );
+            Professeur[] profs = {
+                    s.getEncadrant(),
+                    s.getJury1(),
+                    s.getJury2()
+            };
+
             for (Professeur p : profs) {
-                String key = p.getNom() + " " + p.getPrenom();
-                total.put(key, total.getOrDefault(key, 0) + 1);
+                String id = p.getId();
+                String nom = p.getNom() + " " + p.getPrenom();
+                countParId.put(id, countParId.getOrDefault(id, 0) + 1);
+                nomParId.put(id, nom);
             }
         }
-        // Tri décroissant par charge
-        List<Map.Entry<String, Integer>> entries = new ArrayList<>(total.entrySet());
-        entries.sort((a, b) -> b.getValue() - a.getValue());
-        Map<String, Integer> trie = new LinkedHashMap<>();
-        for (Map.Entry<String, Integer> e : entries) trie.put(e.getKey(), e.getValue());
-        return trie;
+        Map<String, Integer> total = new LinkedHashMap<>();
+        for (String id : countParId.keySet())
+            total.put(nomParId.get(id), countParId.get(id));
+        return total;
+
     }
 
-    // ─────────────────────────────────────────────
-    // 2. RÉPARTITION PAR FILIÈRE
-    //    Retourne : filière → nombre d'étudiants soutenus
-    // ─────────────────────────────────────────────
+    //repartition par filiere
+
     public static Map<String, Integer> repartitionParFiliere(Planning planning) {
-        Map<String, Integer> map = new LinkedHashMap<>();
+
+        Map<String, Integer> resultat = new LinkedHashMap<>();
         for (Soutenance s : planning.getSoutenances()) {
             String filiere = s.getEtudiant().getFiliere();
-            if (filiere == null || filiere.isBlank()) filiere = "Non définie";
-            map.put(filiere, map.getOrDefault(filiere, 0) + 1);
+
+            if (filiere == null || filiere.equals("")) {
+                filiere = "Non définie";
+            }
+
+            if (resultat.containsKey(filiere)) {
+                resultat.put(filiere, resultat.get(filiere) + 1);
+            } else {
+                resultat.put(filiere, 1);
+            }
         }
-        return map;
+        return resultat;
     }
 
-    // ─────────────────────────────────────────────
-    // 3. SOUTENANCES PAR JOUR
-    //    Retourne : date → nombre de soutenances ce jour
-    // ─────────────────────────────────────────────
+    // nb soutenance par jour
     public static Map<LocalDate, Integer> soutenancesParJour(Planning planning) {
-        Map<LocalDate, Integer> map = new TreeMap<>(); // TreeMap = trié par date
+
+        Map<LocalDate, Integer> resultat = new TreeMap<>();
+
         for (Soutenance s : planning.getSoutenances()) {
             LocalDate date = s.getCreneau().getDate();
-            map.put(date, map.getOrDefault(date, 0) + 1);
+
+            if (resultat.containsKey(date)) {
+                resultat.put(date, resultat.get(date) + 1);
+            } else {
+                resultat.put(date, 1);
+            }
         }
-        return map;
+        return resultat;
     }
 
-    // ─────────────────────────────────────────────
-    // 4. ÉCART MIN/MAX JURYS
-    //    Retourne une map avec "max", "min", "ecart", "moyenne"
-    //    + la map détaillée nom → count jury
-    // ─────────────────────────────────────────────
+
+    // charge de jurys
     public static Map<String, Integer> chargeJurys(Planning planning) {
-        // Clé = ID du prof (unique) → évite les collisions sur nom+prénom
-        Map<String, Integer> countParId   = new LinkedHashMap<>();
-        Map<String, String>  nomParId     = new LinkedHashMap<>();
+        Map<String, Integer> countParId = new LinkedHashMap<>();
+        Map<String, String>  nomParId   = new LinkedHashMap<>();
 
         for (Soutenance s : planning.getSoutenances()) {
-            for (Professeur p : List.of(s.getJury1(), s.getJury2())) {
+            for (Professeur p : new Professeur[]{s.getJury1(), s.getJury2()}) {
                 String id  = p.getId();
                 String nom = p.getNom() + " " + p.getPrenom();
-                countParId.put(id,  countParId.getOrDefault(id, 0) + 1);
+                countParId.put(id, countParId.getOrDefault(id, 0) + 1);
                 nomParId.put(id, nom);
             }
         }
 
-        // Retourner nom → count (pour l'affichage)
-        Map<String, Integer> result = new LinkedHashMap<>();
-        for (String id : countParId.keySet()) {
-            result.put(nomParId.get(id), countParId.get(id));
-        }
-        return result;
+        Map<String, Integer> resultat = new LinkedHashMap<>();
+        for (String id : countParId.keySet())
+            resultat.put(nomParId.get(id), countParId.get(id));
+
+        return resultat;
     }
 
+
+    //  ecart de charge par jury
     public static Map<String, Integer> ecartJurys(Planning planning) {
-        // Calcul de l'écart sur les jurys (jury1 + jury2 uniquement)
-        // Clé interne = ID pour éviter les collisions
-        Map<String, Integer> countParId = new LinkedHashMap<>();
+
+        Map<String, Integer> charges = chargeJurys(planning);
+
+        int max = 0;
+        int min = Integer.MAX_VALUE;
+        int somme = 0;
+
+        for (Integer valeur : charges.values()) {
+            if (valeur > max) {
+                max = valeur;
+            }
+            if (valeur < min) {
+                min = valeur;
+            }
+            somme += valeur;
+        }
+        int moyenne = 0;
+        if (charges.size() > 0) {
+            moyenne = somme / charges.size();
+        } else {
+            min = 0;
+        }
+
+        int ecart = max - min;
+
+        Map<String, Integer> resultat = new LinkedHashMap<>();
+        resultat.put("max", max);
+        resultat.put("min", min);
+        resultat.put("ecart", ecart);
+        resultat.put("moyenne", moyenne);
+
+        return resultat;
+    }
+
+    // OCCUPATION DES SALLES
+
+    public static Map<String, Integer> occupationSalles(Planning planning) {
+
+        Map<String, Integer> resultat = new LinkedHashMap<>();
 
         for (Soutenance s : planning.getSoutenances()) {
-            for (Professeur p : List.of(s.getJury1(), s.getJury2())) {
-                String id = p.getId();
-                countParId.put(id, countParId.getOrDefault(id, 0) + 1);
+
+            String salle = s.getSalle().getNom();
+
+            if (resultat.containsKey(salle)) {
+                resultat.put(salle, resultat.get(salle) + 1);
+            } else {
+                resultat.put(salle, 1);
             }
         }
 
-        if (countParId.isEmpty())
-            return Map.of("max", 0, "min", 0, "ecart", 0, "moyenne", 0);
-
-        int max     = Collections.max(countParId.values());
-        int min     = Collections.min(countParId.values());
-        int total   = countParId.values().stream().mapToInt(Integer::intValue).sum();
-        int moyenne = total / countParId.size();
-        int ecart   = max - min; // ← différence réelle entre le plus chargé et le moins chargé
-
-        Map<String, Integer> result = new LinkedHashMap<>();
-        result.put("max",     max);
-        result.put("min",     min);
-        result.put("ecart",   ecart);
-        result.put("moyenne", moyenne);
-        return result;
+        return resultat;
     }
 
-    // ─────────────────────────────────────────────
-    // 5. TAUX D'OCCUPATION DES SALLES
-    //    Retourne : nomSalle → nombre de créneaux utilisés
-    // ─────────────────────────────────────────────
-    public static Map<String, Integer> occupationSalles(Planning planning) {
-        Map<String, Integer> map = new LinkedHashMap<>();
-        for (Soutenance s : planning.getSoutenances()) {
-            String salle = s.getSalle().getNom();
-            map.put(salle, map.getOrDefault(salle, 0) + 1);
-        }
-        // Tri décroissant
-        List<Map.Entry<String, Integer>> entries = new ArrayList<>(map.entrySet());
-        entries.sort((a, b) -> b.getValue() - a.getValue());
-        Map<String, Integer> trie = new LinkedHashMap<>();
-        for (Map.Entry<String, Integer> e : entries) trie.put(e.getKey(), e.getValue());
-        return trie;
-    }
 
-    // ─────────────────────────────────────────────
-    // MÉTHODE GLOBALE (console) — conservée pour compatibilité
-    // ─────────────────────────────────────────────
     public static void analyser(Planning planning) {
-        System.out.println("\n===== CHARGE PAR PROFESSEUR =====");
-        chargeParProf(planning).forEach((k, v) ->
-                System.out.println("  " + k + " : " + v + " soutenance(s)"));
 
-        System.out.println("\n===== RÉPARTITION PAR FILIÈRE =====");
-        repartitionParFiliere(planning).forEach((k, v) ->
-                System.out.println("  " + k + " : " + v));
+        System.out.println("\nCHARGE PAR PROFESSEUR ");
+        for (Map.Entry<String, Integer> e : chargeParProf(planning).entrySet()) {
+            System.out.println(e.getKey() + " : " + e.getValue());
+        }
 
-        System.out.println("\n===== SOUTENANCES PAR JOUR =====");
-        soutenancesParJour(planning).forEach((k, v) ->
-                System.out.println("  " + k + " : " + v));
+        System.out.println("REPARTITION PAR FILIERE");
+        for (Map.Entry<String, Integer> e : repartitionParFiliere(planning).entrySet()) {
+            System.out.println(e.getKey() + " : " + e.getValue());
+        }
 
-        System.out.println("\n===== ÉCART JURYS =====");
-        ecartJurys(planning).forEach((k, v) ->
-                System.out.println("  " + k + " : " + v));
+        System.out.println("SOUTENANCES PAR JOUR ");
+        for (Map.Entry<LocalDate, Integer> e : soutenancesParJour(planning).entrySet()) {
+            System.out.println(e.getKey() + " : " + e.getValue());
+        }
 
-        System.out.println("\n===== OCCUPATION SALLES =====");
-        occupationSalles(planning).forEach((k, v) ->
-                System.out.println("  " + k + " : " + v));
+        System.out.println(" CHARGE DES JURYS");
+        for (Map.Entry<String, Integer> e : chargeJurys(planning).entrySet()) {
+            System.out.println(e.getKey() + " : " + e.getValue());
+        }
+
+        System.out.println(" ECART DES JURYS ");
+        for (Map.Entry<String, Integer> e : ecartJurys(planning).entrySet()) {
+            System.out.println(e.getKey() + " : " + e.getValue());
+        }
+
+        System.out.println(" OCCUPATION DES SALLES ");
+        for (Map.Entry<String, Integer> e : occupationSalles(planning).entrySet()) {
+            System.out.println(e.getKey() + " : " + e.getValue());
+        }
     }
 }

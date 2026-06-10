@@ -11,28 +11,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-/**
- * Génère le tableau d'affectation en PDF.
- *
- * Format :
- * ┌──────────────────┬──────────────┬──────────────┬──────────────┐
- * │    Encadrant     │  Étudiant 1  │  Étudiant 2  │  Étudiant 3  │
- * ├──────────────────┼──────────────┼──────────────┼──────────────┤
- * │  Benali Omar     │ Alami Mohamed│ Karimi Sara  │ Tazi Youssef │
- * │  Tazi Fatima     │ Benali Ahmed │              │              │
- * └──────────────────┴──────────────┴──────────────┴──────────────┘
- */
+
 public class PdfAffectationWriter {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // ── Dimensions A4 ─────────────────────────────────────────────────────
+    // Dimensions A4
     private static final float PAGE_W = PDRectangle.A4.getWidth();
     private static final float PAGE_H = PDRectangle.A4.getHeight();
     private static final float MARGIN  = 30f;
     private static final float TABLE_W = PAGE_W - 2 * MARGIN;
 
-    // ── Couleurs ──────────────────────────────────────────────────────────
+    // Couleurs
     private static final float[] VERT_TITRE  = {0.11f, 0.37f, 0.13f};
     private static final float[] VERT_ENTETE = {0.18f, 0.49f, 0.20f};
     private static final float[] VERT_CLAIR  = {0.91f, 0.96f, 0.91f};
@@ -41,26 +31,25 @@ public class PdfAffectationWriter {
     private static final float[] NOIR        = {0.10f, 0.10f, 0.10f};
     private static final float[] BORDURE     = {0.78f, 0.90f, 0.79f};
 
-    // ── Hauteurs ──────────────────────────────────────────────────────────
+    // Hauteurs
     private static final float H_TITRE  = 44f;
     private static final float H_SOUS   = 22f;
     private static final float H_ENTETE = 26f;
     private static final float H_LIGNE  = 22f;
     private static final float H_PIED   = 20f;
 
-    // ════════════════════════════════════════════════════════════════════
+
     public void exporter(Map<Encadrant, List<Etudiant>> affectation,
                          String cheminSortie) throws IOException {
 
         if (affectation == null || affectation.isEmpty())
-            throw new IllegalArgumentException("Affectation vide.");
+            throw new IllegalArgumentException("Affectation vide");
 
-        // ── Trouver le nombre max d'étudiants par encadrant ───────────────
+        // Trouver le nombre max d'etudiants par encadrant
         int maxEtu = affectation.values().stream()
                 .mapToInt(List::size).max().orElse(1);
 
-        // ── Largeurs des colonnes ─────────────────────────────────────────
-        // Col 0 : Encadrant (25%)  |  Col 1..N : étudiants (reste / maxEtu)
+        //  Largeurs des colonnes
         float colEncadrant = TABLE_W * 0.25f;
         float colEtu       = (TABLE_W - colEncadrant) / maxEtu;
 
@@ -90,15 +79,15 @@ public class PdfAffectationWriter {
 
                     float y = PAGE_H - MARGIN;
 
-                    // ── Titre ─────────────────────────────────────────────
+                    // Titre
                     y = dessinerTitre(cs, y, affectation.size(),
                             totalEtudiants, p + 1, totalPages);
                     y -= 6;
 
-                    // ── En-tête colonnes ──────────────────────────────────
+                    // En-tete colonnes
                     y = dessinerEntete(cs, y, colEncadrant, colEtu, maxEtu);
 
-                    // ── Lignes encadrants ─────────────────────────────────
+                    //  Lignes encadrants
                     for (int i = debut; i < fin; i++) {
                         Map.Entry<Encadrant, List<Etudiant>> entry = entries.get(i);
                         boolean alt = i % 2 != 0;
@@ -106,19 +95,17 @@ public class PdfAffectationWriter {
                                 entry.getValue(), colEncadrant, colEtu, maxEtu, alt);
                     }
 
-                    // ── Pied de page ──────────────────────────────────────
                     dessinerPied(cs, p + 1, totalPages);
                 }
             }
 
             doc.save(cheminSortie);
-            System.out.println("✅ Affectation PDF → " + cheminSortie);
+            System.out.println("Affectation PDF " + cheminSortie);
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════
+
     //  SECTIONS
-    // ════════════════════════════════════════════════════════════════════
 
     private float dessinerTitre(PDPageContentStream cs, float y,
                                 int nbEnc, int nbEtu, int page, int total) throws IOException {
@@ -135,8 +122,8 @@ public class PdfAffectationWriter {
 
         // Sous-titre
         rempli(cs, MARGIN, y - H_SOUS, TABLE_W, H_SOUS, VERT_ENTETE);
-        String info = nbEnc + " encadrant(s)   •   " + nbEtu
-                + " étudiant(s)   •   Généré le " + LocalDate.now().format(FMT)
+        String info = nbEnc + " encadrants    " + nbEtu
+                + " étudiants  Généré le " + LocalDate.now().format(FMT)
                 + (total > 1 ? "   •   Page " + page + "/" + total : "");
         texte(cs, normal, 9, BLANC, info, MARGIN + 8, y - H_SOUS + 7);
         return y - H_SOUS;
@@ -159,9 +146,7 @@ public class PdfAffectationWriter {
                     "Étudiant " + (i + 1), x + 4, y - H_ENTETE + 8);
             traitV(cs, x, y, y - H_ENTETE, BLANC, 0.5f);
         }
-        // Bordure droite
         traitV(cs, MARGIN + TABLE_W, y, y - H_ENTETE, BLANC, 0.5f);
-        // Ligne basse
         traitH(cs, MARGIN, MARGIN + TABLE_W, y - H_ENTETE, BLANC, 0.5f);
 
         return y - H_ENTETE;
@@ -177,13 +162,13 @@ public class PdfAffectationWriter {
         float[] bg = alt ? VERT_CLAIR : BLANC;
         rempli(cs, MARGIN, y - H_LIGNE, TABLE_W, H_LIGNE, bg);
 
-        // ── Colonne encadrant ─────────────────────────────────────────────
+        //  Colonne encadrant
         String nomEnc = tronquer(v(enc.getNom()) + " " + v(enc.getPrenom()),
                 bold, 10, colEnc - 8);
         texte(cs, bold, 10, VERT_TITRE, nomEnc, MARGIN + 5, y - H_LIGNE + 7);
         traitV(cs, MARGIN, y, y - H_LIGNE, BORDURE, 0.4f);
 
-        // ── Colonnes étudiants ────────────────────────────────────────────
+        //Colonnes étudiants
         for (int i = 0; i < maxEtu; i++) {
             float x = MARGIN + colEnc + i * colEtu;
             traitV(cs, x, y, y - H_LIGNE, BORDURE, 0.4f);
@@ -196,7 +181,7 @@ public class PdfAffectationWriter {
                 texte(cs, normal, 9, NOIR, nomEtu, x + 4, y - H_LIGNE + 7);
             }
         }
-        // Bordure droite + ligne basse
+
         traitV(cs, MARGIN + TABLE_W, y, y - H_LIGNE, BORDURE, 0.4f);
         traitH(cs, MARGIN, MARGIN + TABLE_W, y - H_LIGNE, BORDURE, 0.4f);
 
@@ -208,16 +193,15 @@ public class PdfAffectationWriter {
         PDFont font = PDType1Font.HELVETICA;
         traitH(cs, MARGIN, MARGIN + TABLE_W, MARGIN + H_PIED, VERT_ENTETE, 0.5f);
         texte(cs, font, 8, GRIS,
-                "Tableau d'affectation  •  Généré le " + LocalDate.now().format(FMT),
+                "Tableau d'affectation  Généré le " + LocalDate.now().format(FMT),
                 MARGIN, MARGIN + 6);
         String pg = "Page " + page + " / " + total;
         texte(cs, font, 8, GRIS, pg,
                 MARGIN + TABLE_W - longueur(pg, font, 8), MARGIN + 6);
     }
 
-    // ════════════════════════════════════════════════════════════════════
     //  HELPERS GRAPHIQUES
-    // ════════════════════════════════════════════════════════════════════
+
 
     private void rempli(PDPageContentStream cs, float x, float y,
                         float w, float h, float[] c) throws IOException {

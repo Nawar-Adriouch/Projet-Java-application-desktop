@@ -40,10 +40,11 @@ public class StatsPanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(BG);
 
-        // En-tête
+        // En-tete
         JPanel header = buildHeader();
         add(header, BorderLayout.NORTH);
 
+        // Zone de cartes
         cardsContainer = new JPanel();
         cardsContainer.setBackground(BG);
         cardsContainer.setLayout(new BoxLayout(cardsContainer, BoxLayout.Y_AXIS));
@@ -63,7 +64,7 @@ public class StatsPanel extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    // ── En-tête ───────────────────────────────────────────────
+    // En-tete
     private JPanel buildHeader() {
         JPanel h = new JPanel(new BorderLayout());
         h.setBackground(Color.WHITE);
@@ -92,7 +93,7 @@ public class StatsPanel extends JPanel {
         return h;
     }
 
-
+    //API publique
     public void setPlanning(Planning planning) {
         this.planning = planning;
         refreshGraphs();
@@ -117,7 +118,7 @@ public class StatsPanel extends JPanel {
         cardsContainer.repaint();
     }
 
-    // KPI cards
+    // KPI cards 1 ligne
     private void buildKpiRow() {
         int total   = planning.getSoutenances().size();
         long salles = planning.getSoutenances().stream()
@@ -148,6 +149,7 @@ public class StatsPanel extends JPanel {
                 g2.setColor(BORDER_CLR);
                 g2.setStroke(new BasicStroke(1f));
                 g2.draw(new RoundRectangle2D.Float(0, 0, getWidth()-1, getHeight()-1, 12, 12));
+                // barre accent gauche
                 g2.setColor(accent);
                 g2.fillRoundRect(0, 16, 4, getHeight()-32, 2, 2);
             }
@@ -172,14 +174,98 @@ public class StatsPanel extends JPanel {
         return card;
     }
 
-    //  Ligne 2  barres charge profs + camembert filières ───
+    //  Tableau charge par professeur
+    private JPanel buildChargeTable(Map<String, Integer> charge) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
+
+        // Trier par charge décroissante
+        List<Map.Entry<String, Integer>> entries = new ArrayList<>(charge.entrySet());
+        entries.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+        // Colonnes
+        String[] cols = {"Professeur", "Charge"};
+        Object[][] data = new Object[entries.size()][2];
+        int maxVal = entries.isEmpty() ? 1 : entries.get(0).getValue();
+        int minVal = entries.isEmpty() ? 0 : entries.get(entries.size()-1).getValue();
+
+        for (int i = 0; i < entries.size(); i++) {
+            data[i][0] = entries.get(i).getKey();
+            data[i][1] = entries.get(i).getValue();
+        }
+
+        JTable table = new JTable(data, cols) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+
+            // Colorier les lignes selon la charge (max=rouge, min=vert)
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer r, int row, int col) {
+                Component c = super.prepareRenderer(r, row, col);
+                if (!isRowSelected(row)) {
+                    int val = (int) getValueAt(row, 1);
+                    if (val == maxVal)      c.setBackground(new Color(0xFEE2E2)); // rouge clair
+                    else if (val == minVal) c.setBackground(new Color(0xDCFCE7)); // vert clair
+                    else                   c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(0xF8FAFC));
+                    c.setForeground(TEXT_PRI);
+                }
+                return c;
+            }
+        };
+
+        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        table.setRowHeight(26);
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        table.getTableHeader().setBackground(new Color(0x1E293B));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setPreferredSize(new Dimension(0, 32));
+        table.setShowGrid(true);
+        table.setGridColor(BORDER_CLR);
+
+        // Largeurs colonnes
+        table.getColumnModel().getColumn(0).setPreferredWidth(200);
+        table.getColumnModel().getColumn(1).setPreferredWidth(60);
+
+        // Centrer colonne charge
+        javax.swing.table.DefaultTableCellRenderer centre = new javax.swing.table.DefaultTableCellRenderer();
+        centre.setHorizontalAlignment(SwingConstants.CENTER);
+        table.getColumnModel().getColumn(1).setCellRenderer(centre);
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.setOpaque(false);
+        //max Min
+        JPanel legend = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        legend.setOpaque(false);
+        legend.add(legendItem(new Color(0xFEE2E2), "Charge max (" + maxVal + ")"));
+        legend.add(legendItem(new Color(0xDCFCE7), "Charge min (" + minVal + ")"));
+
+        panel.add(scroll,  BorderLayout.CENTER);
+        panel.add(legend,  BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel legendItem(Color color, String text) {
+        JPanel item = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        item.setOpaque(false);
+        JPanel sq = new JPanel();
+        sq.setBackground(color);
+        sq.setPreferredSize(new Dimension(14, 14));
+        sq.setBorder(BorderFactory.createLineBorder(BORDER_CLR));
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        lbl.setForeground(TEXT_SEC);
+        item.add(sq); item.add(lbl);
+        return item;
+    }
+
+    // ─Ligne 2 barres charge profs + camembert filieres
     private void buildRow2Graphs() {
         JPanel row = new JPanel(new GridLayout(1, 2, 12, 0));
         row.setBackground(BG);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 320));
 
         Map<String, Integer> charge = StatsPlanning.chargeParProf(planning);
-        row.add(wrapCard("Charge par professeur", new BarChartPanel(charge, PALETTE, false)));
+        row.add(wrapCard("Charge par professeur", buildChargeTable(charge)));
 
         Map<String, Integer> filieres = StatsPlanning.repartitionParFiliere(planning);
         row.add(wrapCard("Répartition par filière", new PieChartPanel(filieres, PALETTE)));
@@ -187,7 +273,7 @@ public class StatsPanel extends JPanel {
         cardsContainer.add(row);
     }
 
-    //Ligne 3  barres jour + barres salles
+    // Ligne 3 barres jour + barres salles
     private void buildRow3Graphs() {
         JPanel row = new JPanel(new GridLayout(1, 2, 12, 0));
         row.setBackground(BG);
@@ -207,7 +293,6 @@ public class StatsPanel extends JPanel {
         cardsContainer.add(row);
     }
 
-    // ── Wrapper carte ─────────────────────────────────────────
     private JPanel wrapCard(String title, JComponent content) {
         JPanel card = new JPanel(new BorderLayout()) {
             @Override protected void paintComponent(Graphics g) {
@@ -299,7 +384,7 @@ public class StatsPanel extends JPanel {
                 int vx = x + barW/2 - g2.getFontMetrics().stringWidth(v)/2;
                 g2.drawString(v, vx, y - 3);
 
-                // Label axe X (tronqué)
+                // Label axe X
                 g2.setFont(new Font("SansSerif", Font.PLAIN, 10));
                 g2.setColor(TEXT_SEC);
                 String shortKey = key.length() > 8 ? key.substring(0, 7) + "." : key;
@@ -356,7 +441,7 @@ public class StatsPanel extends JPanel {
                 g2.setColor(c);
                 g2.fill(new Arc2D.Double(cx, cy, diameter, diameter, startAngle, sweep, Arc2D.PIE));
 
-                // Séparateur blanc
+
                 g2.setColor(Color.WHITE);
                 g2.setStroke(new BasicStroke(2f));
                 g2.draw(new Arc2D.Double(cx, cy, diameter, diameter, startAngle, sweep, Arc2D.PIE));
@@ -376,7 +461,6 @@ public class StatsPanel extends JPanel {
                 idx++;
             }
 
-            // Légende sous le camembert
             int ly = pieZone + 4;
             idx = 0;
             g2.setFont(new Font("SansSerif", Font.PLAIN, 11));
@@ -392,4 +476,3 @@ public class StatsPanel extends JPanel {
         }
     }
 }
-

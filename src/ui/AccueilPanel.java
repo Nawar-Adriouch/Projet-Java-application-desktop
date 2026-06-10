@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import config.OutputConfig;
 
 
 public class AccueilPanel extends JPanel {
@@ -123,7 +124,7 @@ public class AccueilPanel extends JPanel {
         g.insets = new Insets(6, 4, 6, 4);
         g.anchor = GridBagConstraints.WEST;
 
-        // ── Ligne 1 : fichier Excel ──────────────────────────────────────
+        // Ligne 1 : fichier Excel
         g.gridx = 0; g.gridy = 0; g.weightx = 0;
         grille.add(label("Fichier Excel :"), g);
 
@@ -253,12 +254,12 @@ public class AccueilPanel extends JPanel {
         carte.add(titreSection(" Télécharger les résultats", BLEU), BorderLayout.NORTH);
 
         // Bouton 1 : Planning PDF
-        btnDlPlanning = bouton("Planning (.pdf)",
+        btnDlPlanning = bouton("Planning .pdf",
                 new Color(0x1565C0), BLANC, 200, 46);
         btnDlPlanning.addActionListener(e -> telechargerPlanning());
 
         // Bouton 2 : Affectation PDF
-        btnDlAffectation = bouton("Affectation (.pdf)",
+        btnDlAffectation = bouton("Affectation .pdf",
                 new Color(0x2E7D32), BLANC, 200, 46);
         btnDlAffectation.addActionListener(e -> telechargerAffectation());
 
@@ -291,7 +292,7 @@ public class AccueilPanel extends JPanel {
     private void parcourir() {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Sélectionner le fichier Excel");
-        fc.setFileFilter(new FileNameExtensionFilter("Fichiers Excel (*.xlsx)", "xlsx"));
+        fc.setFileFilter(new FileNameExtensionFilter("Fichiers Excel *.xlsx", "xlsx"));
         fc.setAcceptAllFileFilterUsed(false);
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             champFichier.setText(fc.getSelectedFile().getAbsolutePath());
@@ -304,7 +305,7 @@ public class AccueilPanel extends JPanel {
 
     private void generer() {
 
-        // ── Validation champs ─────────────────────────────────────────────
+        // Validation champs
         String chemin = champFichier.getText().trim();
         if (chemin.isBlank() || chemin.startsWith("Aucun")) {
             statut("Veuillez sélectionner un fichier Excel.", ROUGE);
@@ -331,8 +332,7 @@ public class AccueilPanel extends JPanel {
         panelDl.setVisible(false);
         statut("Lecture du fichier et vérification...", GRIS);
 
-        //
-        // Si insuffisant → on affiche le message et on STOP. Rien d'autre ne s'exécute.
+
         int nbEtudiants;
         int nbSalles;
         try {
@@ -405,12 +405,12 @@ public class AccueilPanel extends JPanel {
 
                 if (planning != null && !planning.getSoutenances().isEmpty()) {
                     int nb = planning.getSoutenances().size();
-                    statut( nb + " soutenance(s) planifiée(s)  •  "
-                            + affectation.size() + " encadrant(s)", VERT_MOY);
+                    statut( nb + " soutenances planifiées  •  "
+                            + affectation.size() + " encadrants", VERT_MOY);
                     panelDl.setVisible(true);
                     if (onGenere != null) onGenere.run();
                 } else {
-                    statut("Aucune soutenance planifiée. Vérifiez les données.", ROUGE);
+                    statut("Aucune soutenance planifiée, Vérifiez les données.", ROUGE);
                 }
                 revalidate();
                 repaint();
@@ -422,7 +422,7 @@ public class AccueilPanel extends JPanel {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Enregistrer le planning PDF");
         fc.setFileFilter(new FileNameExtensionFilter("PDF", "pdf"));
-        fc.setSelectedFile(new File("planning_soutenances.pdf"));
+        fc.setSelectedFile(new File(OutputConfig.planningPdf()));
         if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
         String dest = fc.getSelectedFile().getAbsolutePath();
         if (!dest.endsWith(".pdf")) dest += ".pdf";
@@ -458,7 +458,7 @@ public class AccueilPanel extends JPanel {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Enregistrer l'affectation PDF...");
         fc.setFileFilter(new FileNameExtensionFilter("PDF (*.pdf)", "pdf"));
-        fc.setSelectedFile(new File("affectation_encadrants.pdf"));
+        fc.setSelectedFile(new File(OutputConfig.affectationPdf()));
         if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
         String dest = fc.getSelectedFile().getAbsolutePath();
         if (!dest.endsWith(".pdf")) dest += ".pdf";
@@ -506,8 +506,8 @@ public class AccueilPanel extends JPanel {
 
         if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
 
-        final String dossier = fc.getSelectedFile().getAbsolutePath()
-                + File.separator + "Fiches_Soutenances";
+        final String dossier = OutputConfig.dossierFiches();
+
 
         final List<Soutenance> soutenances = new ArrayList<>(planning.getSoutenances());
 
@@ -521,7 +521,7 @@ public class AccueilPanel extends JPanel {
                 try {
                     List<String> fichiers = get();
                     JOptionPane.showMessageDialog(AccueilPanel.this,
-                             fichiers.size() + " fiche(s) PDF créée(s) dans :\n" + dossier,
+                             fichiers.size() + " fiches PDF créées dans :\n" + dossier,
                             "Succès", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception ex) {
                     Throwable cause = ex.getCause() != null ? ex.getCause() : ex;

@@ -42,6 +42,13 @@ public class PdfFicheWriter {
         }
 
         File dossier = new File(cheminDossier);
+
+        if (dossier.exists()) {
+            for (File f : dossier.listFiles()) {
+                f.delete();
+            }
+        }
+        dossier.mkdirs();
         if (!dossier.exists()) dossier.mkdirs();
 
         System.out.println("Export PDF " + cheminDossier
@@ -142,11 +149,11 @@ public class PdfFicheWriter {
             }
 
             doc.save(chemin);
+
         }
     }
 
 
-    //  COMPOSANTS GRAPHIQUES
 
     private float dessinerBandeTitre(PDPageContentStream cs, float y,
                                      String texte, PDFont font, float fontSize,
@@ -308,7 +315,7 @@ public class PdfFicheWriter {
         }
     }
 
-    //  HELPERS GRAPHIQUES PDFBox
+
 
 
     private void rect(PDPageContentStream cs, float x, float y,
@@ -334,4 +341,5 @@ public class PdfFicheWriter {
 
     private String val(String s)       { return s != null ? s : ""; }
     private String sanitiser(String s) { return s == null ? "" : s.replaceAll("[^a-zA-ZÀ-ÿ0-9_-]", "_"); }
+
 }
