@@ -16,3 +16,4 @@ public class Salle {
         return id+" "+nom+" ";
     }
 }
+

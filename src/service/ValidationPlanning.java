@@ -132,9 +132,7 @@ public class ValidationPlanning {
                 a.getJury2().equals(b.getJury2());
     }
 
-    private static void add(Map<String, List<LocalDateTime>> map, String prof, LocalDateTime time) {
-        map.computeIfAbsent(prof, k -> new ArrayList<>()).add(time);
-    }
+
 
     public static boolean verifierTout(List<Soutenance> soutenances) {
 

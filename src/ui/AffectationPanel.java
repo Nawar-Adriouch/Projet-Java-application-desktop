@@ -20,9 +20,9 @@ import java.util.Map;
 
 public class AffectationPanel extends JPanel {
 
-    // ─────────────────────────────────────────────
+
     // Couleurs
-    // ─────────────────────────────────────────────
+
 
     private static final Color BG = new Color(0xF5F7FA);
 
@@ -45,9 +45,7 @@ public class AffectationPanel extends JPanel {
 
     private int hoveredRow = -1;
 
-    // ─────────────────────────────────────────────
     // Constructeur
-    // ─────────────────────────────────────────────
 
     public AffectationPanel() {
 
@@ -64,9 +62,8 @@ public class AffectationPanel extends JPanel {
         add(buildFooter(), BorderLayout.SOUTH);
     }
 
-    // ─────────────────────────────────────────────
     // HEADER
-    // ─────────────────────────────────────────────
+
 
     private JPanel buildHeader() {
 
@@ -78,7 +75,7 @@ public class AffectationPanel extends JPanel {
 
         panel.setBorder(new EmptyBorder(18, 22, 18, 22));
 
-        JLabel title = new JLabel("📋 Tableau d'Affectation");
+        JLabel title = new JLabel("Tableau d'Affectation");
 
         title.setForeground(HEADER_FG);
 
@@ -97,9 +94,9 @@ public class AffectationPanel extends JPanel {
         return panel;
     }
 
-    // ─────────────────────────────────────────────
+
     // CARD CENTRALE
-    // ─────────────────────────────────────────────
+
 
     private JPanel buildCenterCard() {
 
@@ -119,9 +116,8 @@ public class AffectationPanel extends JPanel {
         return card;
     }
 
-    // ─────────────────────────────────────────────
+
     // TABLE
-    // ─────────────────────────────────────────────
 
     private JScrollPane buildTable() {
 
@@ -235,9 +231,8 @@ public class AffectationPanel extends JPanel {
         return scroll;
     }
 
-    // ─────────────────────────────────────────────
+
     // HEADER STYLE
-    // ─────────────────────────────────────────────
 
     private void applyHeaderStyle() {
 
@@ -283,9 +278,9 @@ public class AffectationPanel extends JPanel {
         });
     }
 
-    // ─────────────────────────────────────────────
+
     // FOOTER
-    // ─────────────────────────────────────────────
+
 
     private JPanel buildFooter() {
 
@@ -327,9 +322,8 @@ public class AffectationPanel extends JPanel {
         return item;
     }
 
-    // ─────────────────────────────────────────────
     // API
-    // ─────────────────────────────────────────────
+
 
     public void setAffectation(
             Map<Encadrant, List<Etudiant>> affectation
@@ -423,9 +417,7 @@ public class AffectationPanel extends JPanel {
         );
     }
 
-    // ─────────────────────────────────────────────
-    // PANEL ARRONDI
-    // ─────────────────────────────────────────────
+
 
     class RoundedPanel extends JPanel {
 
@@ -463,9 +455,8 @@ public class AffectationPanel extends JPanel {
         }
     }
 
-    // ─────────────────────────────────────────────
     // OMBRE
-    // ─────────────────────────────────────────────
+
 
     class ShadowBorder extends AbstractBorder {
 

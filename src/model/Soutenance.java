@@ -30,7 +30,7 @@ public class Soutenance {
     public Creneau getCreneau(){return creneau;}
     
 
-    public String toStrin(){
+    public String toString(){
         return etudiant+" "+encadrant+" "+jury1+" "+jury2+" "+salle+" "+creneau;
     }
 

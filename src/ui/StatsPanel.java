@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class StatsPanel extends JPanel {
 
-    // ── Palette ──────────────────────────────────────────────
+    // Palette
     private static final Color BG          = new Color(0xF8F9FA);
     private static final Color CARD_BG     = Color.WHITE;
     private static final Color BORDER_CLR  = new Color(0xE2E8F0);
@@ -44,7 +44,6 @@ public class StatsPanel extends JPanel {
         JPanel header = buildHeader();
         add(header, BorderLayout.NORTH);
 
-        // Zone de cartes (scrollable)
         cardsContainer = new JPanel();
         cardsContainer.setBackground(BG);
         cardsContainer.setLayout(new BoxLayout(cardsContainer, BoxLayout.Y_AXIS));
@@ -93,7 +92,7 @@ public class StatsPanel extends JPanel {
         return h;
     }
 
-    // ── API publique ──────────────────────────────────────────
+
     public void setPlanning(Planning planning) {
         this.planning = planning;
         refreshGraphs();
@@ -118,7 +117,7 @@ public class StatsPanel extends JPanel {
         cardsContainer.repaint();
     }
 
-    // ── KPI cards (1 ligne) ───────────────────────────────────
+    // KPI cards
     private void buildKpiRow() {
         int total   = planning.getSoutenances().size();
         long salles = planning.getSoutenances().stream()
@@ -149,7 +148,6 @@ public class StatsPanel extends JPanel {
                 g2.setColor(BORDER_CLR);
                 g2.setStroke(new BasicStroke(1f));
                 g2.draw(new RoundRectangle2D.Float(0, 0, getWidth()-1, getHeight()-1, 12, 12));
-                // barre accent gauche
                 g2.setColor(accent);
                 g2.fillRoundRect(0, 16, 4, getHeight()-32, 2, 2);
             }
@@ -174,7 +172,7 @@ public class StatsPanel extends JPanel {
         return card;
     }
 
-    // ── Ligne 2 : barres charge profs + camembert filières ───
+    //  Ligne 2  barres charge profs + camembert filières ───
     private void buildRow2Graphs() {
         JPanel row = new JPanel(new GridLayout(1, 2, 12, 0));
         row.setBackground(BG);
@@ -189,7 +187,7 @@ public class StatsPanel extends JPanel {
         cardsContainer.add(row);
     }
 
-    // ── Ligne 3 : barres jour + barres salles ────────────────
+    //Ligne 3  barres jour + barres salles
     private void buildRow3Graphs() {
         JPanel row = new JPanel(new GridLayout(1, 2, 12, 0));
         row.setBackground(BG);

@@ -1,5 +1,5 @@
 package ui;
-
+import  Exceptions.*;
 import model.*;
 import repository.ExcelReaderImpl;
 import repository.PdfPlanningWriter;
@@ -20,22 +20,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Panel d'accueil.
- *
- * Inputs :
- *   - Fichier Excel (bouton Parcourir)
- *   - Date de la première soutenance (JJ/MM/AAAA)
- *   - Nombre de jours voulus (spinner)
- *
- * Actions :
- *   - Bouton "Générer" → lit Excel, affecte, planifie
- *   - Bouton "Télécharger Planning"     → export Excel planning
- *   - Bouton "Télécharger Affectation"  → export Excel affectation
- */
+
 public class AccueilPanel extends JPanel {
 
-    // ── Palette identique à AffectationPanel ─────────────────────────────
+    //Palette identique a AffectationPanel
     private static final Color BG          = new Color(0xF5F7FA);
     private static final Color VERT_FONCE  = new Color(0x1B5E20);
     private static final Color VERT_MOY    = new Color(0x2E7D32);
@@ -47,7 +35,6 @@ public class AccueilPanel extends JPanel {
     private static final Color BLANC       = Color.WHITE;
     private static final Color BORD        = new Color(0xC8E6C9);
 
-    // ── Widgets ───────────────────────────────────────────────────────────
     private JTextField    champFichier;
     private JTextField    champDate;
     private JSpinner      spinnerJours;
@@ -58,14 +45,10 @@ public class AccueilPanel extends JPanel {
     private JLabel        labelStatut;
     private JProgressBar  progress;
 
-    // ── Données produites ─────────────────────────────────────────────────
     private Planning                       planning;
     private Map<Encadrant, List<Etudiant>> affectation;
-
-    // ── Callback → MainWindow peut rafraîchir les autres onglets ─────────
     private final Runnable onGenere;
 
-    // ═════════════════════════════════════════════════════════════════════
     public AccueilPanel(Runnable onGenere) {
         this.onGenere = onGenere;
         setLayout(new BorderLayout(0, 0));
@@ -75,19 +58,18 @@ public class AccueilPanel extends JPanel {
         add(buildContenu(), BorderLayout.CENTER);
     }
 
-    // ── Getters publics pour MainWindow ───────────────────────────────────
     public Planning                       getPlanning()    { return planning; }
     public Map<Encadrant, List<Etudiant>> getAffectation() { return affectation; }
 
-    // ═════════════════════════════════════════════════════════════════════
+
     //  HEADER
-    // ═════════════════════════════════════════════════════════════════════
+
     private JPanel buildHeader() {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(VERT_FONCE);
         p.setBorder(new EmptyBorder(20, 28, 20, 28));
 
-        JLabel titre = new JLabel("🎓  Planificateur de Soutenances");
+        JLabel titre = new JLabel("Planificateur de Soutenances");
         titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titre.setForeground(BLANC);
 
@@ -106,9 +88,9 @@ public class AccueilPanel extends JPanel {
         return p;
     }
 
-    // ═════════════════════════════════════════════════════════════════════
+
     //  CONTENU PRINCIPAL
-    // ═════════════════════════════════════════════════════════════════════
+
     private JScrollPane buildContenu() {
         JPanel contenu = new JPanel();
         contenu.setBackground(BG);
@@ -129,13 +111,11 @@ public class AccueilPanel extends JPanel {
         return scroll;
     }
 
-    // ═════════════════════════════════════════════════════════════════════
-    //  CARTE 1 — Inputs (fichier + date + nb jours)
-    // ═════════════════════════════════════════════════════════════════════
+    //  CARTE 1  Inputs (fichier + date + nb jours)
     private JPanel buildCarteInputs() {
         JPanel carte = carte();
         carte.setLayout(new BorderLayout(0, 16));
-        carte.add(titreSection("📂  Paramètres d'entrée"), BorderLayout.NORTH);
+        carte.add(titreSection("Paramètres d'entrée"), BorderLayout.NORTH);
 
         JPanel grille = new JPanel(new GridBagLayout());
         grille.setOpaque(false);
@@ -159,12 +139,12 @@ public class AccueilPanel extends JPanel {
         g.gridx = 1; g.weightx = 1; g.fill = GridBagConstraints.HORIZONTAL;
         grille.add(champFichier, g);
 
-        JButton btnBrowse = bouton("📁  Parcourir", VERT_MOY, BLANC, 130, 36);
+        JButton btnBrowse = bouton("Parcourir", VERT_MOY, BLANC, 130, 36);
         btnBrowse.addActionListener(e -> parcourir());
         g.gridx = 2; g.weightx = 0; g.fill = GridBagConstraints.NONE;
         grille.add(btnBrowse, g);
 
-        // ── Ligne 2 : date de début ──────────────────────────────────────
+        //  Ligne 2  date de début
         g.gridx = 0; g.gridy = 1;
         grille.add(label("Date 1ère soutenance :"), g);
 
@@ -192,7 +172,7 @@ public class AccueilPanel extends JPanel {
         grille.add(panDate, g);
         g.gridwidth = 1;
 
-        // ── Ligne 3 : nombre de jours ────────────────────────────────────
+        // Ligne 3 nombre de jours
         g.gridx = 0; g.gridy = 2; g.fill = GridBagConstraints.NONE;
         grille.add(label("Nombre de jours :"), g);
 
@@ -202,7 +182,7 @@ public class AccueilPanel extends JPanel {
         ((JSpinner.DefaultEditor) spinnerJours.getEditor())
                 .getTextField().setHorizontalAlignment(JTextField.CENTER);
 
-        JLabel hintJours = new JLabel("  jours de soutenances (créneaux de 30 min, 8h–18h)");
+        JLabel hintJours = new JLabel("  jours de soutenances");
         hintJours.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         hintJours.setForeground(GRIS);
 
@@ -218,13 +198,12 @@ public class AccueilPanel extends JPanel {
         return carte;
     }
 
-    // ═════════════════════════════════════════════════════════════════════
-    //  CARTE 2 — Bouton Générer + statut + progress
-    // ═════════════════════════════════════════════════════════════════════
+    //  CARTE 2  Bouton Générer + statut + progress
+
     private JPanel buildCarteBoutonGenerer() {
         JPanel carte = carte();
         carte.setLayout(new BorderLayout(0, 12));
-        carte.add(titreSection("⚙️  Génération"), BorderLayout.NORTH);
+        carte.add(titreSection("Génération"), BorderLayout.NORTH);
 
         // Barre de progression
         progress = new JProgressBar();
@@ -240,7 +219,7 @@ public class AccueilPanel extends JPanel {
         labelStatut.setForeground(GRIS);
 
         // Bouton
-        btnGenerer = bouton("▶   Générer le Planning", JAUNE, VERT_FONCE, 230, 48);
+        btnGenerer = bouton("Générer le Planning", JAUNE, VERT_FONCE, 230, 48);
         btnGenerer.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btnGenerer.addActionListener(e -> generer());
 
@@ -261,9 +240,9 @@ public class AccueilPanel extends JPanel {
         return carte;
     }
 
-    // ═════════════════════════════════════════════════════════════════════
-    //  CARTE 3 — Téléchargement (cachée jusqu'à génération réussie)
-    // ═════════════════════════════════════════════════════════════════════
+
+    //  CARTE 3  Téléchargement
+
     private JPanel buildCarteDl() {
         JPanel carte = carte();
         carte.setBorder(new CompoundBorder(
@@ -271,25 +250,25 @@ public class AccueilPanel extends JPanel {
                 new EmptyBorder(20, 24, 20, 24)
         ));
         carte.setLayout(new BorderLayout(0, 14));
-        carte.add(titreSection("💾  Télécharger les résultats", BLEU), BorderLayout.NORTH);
+        carte.add(titreSection(" Télécharger les résultats", BLEU), BorderLayout.NORTH);
 
         // Bouton 1 : Planning PDF
-        btnDlPlanning = bouton("📄  Planning (.pdf)",
+        btnDlPlanning = bouton("Planning (.pdf)",
                 new Color(0x1565C0), BLANC, 200, 46);
         btnDlPlanning.addActionListener(e -> telechargerPlanning());
 
         // Bouton 2 : Affectation PDF
-        btnDlAffectation = bouton("📄  Affectation (.pdf)",
+        btnDlAffectation = bouton("Affectation (.pdf)",
                 new Color(0x2E7D32), BLANC, 200, 46);
         btnDlAffectation.addActionListener(e -> telechargerAffectation());
 
         // Bouton 3 : Fiches PDF (dossier)
-        JButton btnFiches = bouton("📁  Fiches évaluation (dossier)",
+        JButton btnFiches = bouton("Fiches évaluation (dossier)",
                 new Color(0x6A1B9A), BLANC, 230, 46);
         btnFiches.addActionListener(e -> telechargerFiches());
 
         // Bouton 4 : Tout télécharger
-        JButton btnTout = bouton("⬇  Tout télécharger", new Color(0xE65100), BLANC, 190, 46);
+        JButton btnTout = bouton("Tout télécharger", new Color(0xE65100), BLANC, 190, 46);
         btnTout.addActionListener(e -> {
             telechargerPlanning();
             telechargerAffectation();
@@ -307,9 +286,7 @@ public class AccueilPanel extends JPanel {
         return carte;
     }
 
-    // ═════════════════════════════════════════════════════════════════════
     //  ACTIONS
-    // ═════════════════════════════════════════════════════════════════════
 
     private void parcourir() {
         JFileChooser fc = new JFileChooser();
@@ -321,7 +298,7 @@ public class AccueilPanel extends JPanel {
             champFichier.setForeground(Color.BLACK);
             panelDl.setVisible(false);
             planning = null;
-            statut("✅ Fichier sélectionné : " + fc.getSelectedFile().getName(), VERT_MOY);
+            statut("Fichier sélectionné : " + fc.getSelectedFile().getName(), VERT_MOY);
         }
     }
 
@@ -330,7 +307,7 @@ public class AccueilPanel extends JPanel {
         // ── Validation champs ─────────────────────────────────────────────
         String chemin = champFichier.getText().trim();
         if (chemin.isBlank() || chemin.startsWith("Aucun")) {
-            statut("⚠  Veuillez sélectionner un fichier Excel.", ROUGE);
+            statut("Veuillez sélectionner un fichier Excel.", ROUGE);
             return;
         }
 
@@ -342,21 +319,19 @@ public class AccueilPanel extends JPanel {
                     Integer.parseInt(p[1]),
                     Integer.parseInt(p[0]));
         } catch (Exception ex) {
-            statut("⚠  Date invalide — format JJ/MM/AAAA", ROUGE);
+            statut("Date invalide — format JJ/MM/AAAA", ROUGE);
             return;
         }
 
         int nbJours = (int) spinnerJours.getValue();
         final LocalDate date = dateDebut;
 
-        // ── Réinitialisation ──────────────────────────────────────────────
         planning    = null;
         affectation = null;
         panelDl.setVisible(false);
-        statut("🔎 Lecture du fichier et vérification...", GRIS);
+        statut("Lecture du fichier et vérification...", GRIS);
 
-        // ── VÉRIFICATION CAPACITÉ ─────────────────────────────────────────
-        // Fait ICI, sur le thread principal, AVANT de créer le SwingWorker.
+        //
         // Si insuffisant → on affiche le message et on STOP. Rien d'autre ne s'exécute.
         int nbEtudiants;
         int nbSalles;
@@ -365,31 +340,25 @@ public class AccueilPanel extends JPanel {
             nbEtudiants = readerCheck.lireEtudiants().size();
             nbSalles    = readerCheck.lireSalles().size();
         } catch (Exception ex) {
-            statut("❌ Impossible de lire le fichier : " + ex.getMessage(), ROUGE);
+            statut("Impossible de lire le fichier : " + ex.getMessage(), ROUGE);
             return;
         }
 
-        int jourMin = new GenerateurCreneaux().verifierCapacite(nbJours, nbEtudiants, nbSalles);
+        try {
+            new GenerateurCreneaux().verifierCpacite(nbJours, nbEtudiants, nbSalles);
+        } catch (nombreJoursInvalideException e) {
 
-        if (jourMin > 0) {
-            // ← ARRÊT TOTAL. Le SwingWorker n'est JAMAIS créé.
-            String msg = "Le nombre de jours saisi est insuffisant."
+            String msg = e.getMessage();
 
+            statut(" Insuffisant", ROUGE);
 
-                    + "  • Étudiants    : " + nbEtudiants
-
-                    + "  • Salles        : " + nbSalles
-                    + "  • Jours saisis  : " + nbJours
-                    + "  ➤ Nombre minimal requis : " + jourMin + " jour(s)"
-                    + "Corrigez le spinner et relancez.";
-            statut("⚠  Insuffisant — minimum requis : " + jourMin + " jour(s)", ROUGE);
-            JOptionPane.showMessageDialog(
-                    this, msg,
+            JOptionPane.showMessageDialog(this, msg,
                     "Capacité insuffisante", JOptionPane.WARNING_MESSAGE);
-            return; // ← STOP
+
+            return;
         }
 
-        // ── GÉNÉRATION (uniquement si capacité OK) ────────────────────────
+
         btnGenerer.setEnabled(false);
         progress.setIndeterminate(true);
         progress.setVisible(true);
@@ -398,19 +367,19 @@ public class AccueilPanel extends JPanel {
             @Override
             protected Void doInBackground() {
                 try {
-                    publish("📂 Lecture du fichier Excel...");
+                    publish("Lecture du fichier Excel");
                     ExcelReaderImpl reader = new ExcelReaderImpl(chemin);
                     List<Etudiant>   etudiants = reader.lireEtudiants();
                     List<Professeur> profs     = reader.lireProfesseurs();
                     List<Salle>      salles    = reader.lireSalles();
 
-                    publish("👥 Affectation des étudiants...");
+                    publish("Affectation des étudiants...");
                     affectation = new Affectation().affectation(etudiants, profs);
 
-                    publish("📅 Génération des créneaux (" + nbJours + " jour(s))...");
+                    publish("Génération des créneaux (" + nbJours + " jour(s))...");
                     List<Creneau> creneaux = new GenerateurCreneaux().generer(date, nbJours);
 
-                    publish("🧠 Planification en cours...");
+                    publish("Planification en cours ");
                     planning = new Planificateur(creneaux, salles, profs)
                             .plannifier(affectation);
 
@@ -424,7 +393,7 @@ public class AccueilPanel extends JPanel {
             @Override
             protected void process(java.util.List<String> chunks) {
                 String msg = chunks.get(chunks.size() - 1);
-                if (msg.startsWith("ERR:")) statut("❌ " + msg.substring(4), ROUGE);
+                if (msg.startsWith("ERR:")) statut(" " + msg.substring(4), ROUGE);
                 else                        statut(msg, GRIS);
             }
 
@@ -436,12 +405,12 @@ public class AccueilPanel extends JPanel {
 
                 if (planning != null && !planning.getSoutenances().isEmpty()) {
                     int nb = planning.getSoutenances().size();
-                    statut("✅ " + nb + " soutenance(s) planifiée(s)  •  "
+                    statut( nb + " soutenance(s) planifiée(s)  •  "
                             + affectation.size() + " encadrant(s)", VERT_MOY);
                     panelDl.setVisible(true);
                     if (onGenere != null) onGenere.run();
                 } else {
-                    statut("⚠  Aucune soutenance planifiée. Vérifiez les données.", ROUGE);
+                    statut("Aucune soutenance planifiée. Vérifiez les données.", ROUGE);
                 }
                 revalidate();
                 repaint();
@@ -451,8 +420,8 @@ public class AccueilPanel extends JPanel {
 
     private void telechargerPlanning() {
         JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Enregistrer le planning PDF...");
-        fc.setFileFilter(new FileNameExtensionFilter("PDF (*.pdf)", "pdf"));
+        fc.setDialogTitle("Enregistrer le planning PDF");
+        fc.setFileFilter(new FileNameExtensionFilter("PDF", "pdf"));
         fc.setSelectedFile(new File("planning_soutenances.pdf"));
         if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
         String dest = fc.getSelectedFile().getAbsolutePath();
@@ -466,11 +435,11 @@ public class AccueilPanel extends JPanel {
             @Override protected void done() {
                 try { get();
                     JOptionPane.showMessageDialog(AccueilPanel.this,
-                            "✅ Planning PDF enregistré :\n" + chemin,
+                            "Planning PDF enregistré :\n" + chemin,
                             "Succès", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(AccueilPanel.this,
-                            "❌ Erreur :\n" + (ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage()),
+                            "Erreur :\n" + (ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage()),
                             "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -478,10 +447,10 @@ public class AccueilPanel extends JPanel {
     }
 
     private void telechargerAffectation() {
-        // Vérification que l'affectation existe
+        // verification que l'affectation existe
         if (affectation == null || affectation.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "⚠  Aucune affectation disponible.\nGénérez d'abord le planning.",
+                    " Aucune affectation disponible.\nGénérez d'abord le planning.",
                     "Affectation manquante", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -495,24 +464,22 @@ public class AccueilPanel extends JPanel {
         if (!dest.endsWith(".pdf")) dest += ".pdf";
         final String chemin = dest;
 
-        // Copie défensive pour le thread
         final Map<Encadrant, List<Etudiant>> affectationCopie = new LinkedHashMap<>(affectation);
 
         new SwingWorker<Void, Void>() {
             @Override protected Void doInBackground() throws Exception {
-                // PdfAffectationWriter : génère un PDF avec une section par encadrant
-                // et la liste de ses étudiants — PAS les fiches individuelles
+
                 new PdfAffectationWriter().exporter(affectationCopie, chemin);
                 return null;
             }
             @Override protected void done() {
                 try { get();
                     JOptionPane.showMessageDialog(AccueilPanel.this,
-                            "✅ Affectation PDF enregistrée :\n" + chemin,
+                            "Affectation PDF enregistrée :\n" + chemin,
                             "Succès", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(AccueilPanel.this,
-                            "❌ Erreur :\n" + (ex.getCause() != null
+                            "Erreur :\n" + (ex.getCause() != null
                                     ? ex.getCause().getMessage() : ex.getMessage()),
                             "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
@@ -521,17 +488,17 @@ public class AccueilPanel extends JPanel {
     }
 
     private void telechargerFiches() {
-        // ── Vérification planning avant tout ─────────────────────────────
+        //  Verification planning avant tout
         if (planning == null || planning.getSoutenances().isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                    "⚠  Aucun planning généré.\nCliquez d'abord sur 'Générer le Planning'.",
+                    "Aucun planning généré.\nCliquez d'abord sur 'Générer le Planning'.",
                     "Planning manquant", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        System.out.println("📋 Soutenances disponibles : " + planning.getSoutenances().size());
+        System.out.println("Soutenances disponibles : " + planning.getSoutenances().size());
 
-        // ── Sélectionner un DOSSIER ───────────────────────────────────────
+        // Sélectionner un DOSSIER
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Choisir le dossier de destination pour les fiches");
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -542,7 +509,6 @@ public class AccueilPanel extends JPanel {
         final String dossier = fc.getSelectedFile().getAbsolutePath()
                 + File.separator + "Fiches_Soutenances";
 
-        // Copie défensive de la liste pour le thread
         final List<Soutenance> soutenances = new ArrayList<>(planning.getSoutenances());
 
         new SwingWorker<List<String>, Void>() {
@@ -555,21 +521,18 @@ public class AccueilPanel extends JPanel {
                 try {
                     List<String> fichiers = get();
                     JOptionPane.showMessageDialog(AccueilPanel.this,
-                            "✅ " + fichiers.size() + " fiche(s) PDF créée(s) dans :\n" + dossier,
+                             fichiers.size() + " fiche(s) PDF créée(s) dans :\n" + dossier,
                             "Succès", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception ex) {
                     Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
                     JOptionPane.showMessageDialog(AccueilPanel.this,
-                            "❌ Erreur :\n" + cause.getMessage(),
+                            "Erreur :\n" + cause.getMessage(),
                             "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }.execute();
     }
 
-    // ═════════════════════════════════════════════════════════════════════
-    //  HELPERS UI
-    // ═════════════════════════════════════════════════════════════════════
 
     private void statut(String msg, Color c) {
         labelStatut.setText("  " + msg);

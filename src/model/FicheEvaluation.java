@@ -28,7 +28,7 @@ public class FicheEvaluation {
 
     public String toString(){
         return etudiant.getNom()+"  "+etudiant.getPrenom()+ " "+etudiant.getSujet()+" "+
-                        etudiant.getFiliere()+" "+
+                        etudiant.getFiliere()+" "+etudiant.getLangue()+" "+
                         encadrant.getNom()+"  "+encadrant.getPrenom()+" "+
                         jury1.getNom()+"  "+jury1.getPrenom()+" "+
                         jury2.getNom()+"  "+jury2.getNom()+" "+

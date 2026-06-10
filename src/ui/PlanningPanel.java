@@ -12,7 +12,7 @@ import java.util.List;
 
 public class PlanningPanel extends JPanel {
 
-    // ── Palette ───────────────────────────────────────────────────────────
+    // Palette
     private static final Color BG         = new Color(0xF5F7FA);
     private static final Color HEADER_BG  = new Color(0x1B5E20);
     private static final Color HEADER_FG  = Color.WHITE;
@@ -25,7 +25,7 @@ public class PlanningPanel extends JPanel {
     private static final DateTimeFormatter FMT_DATE  = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FMT_HEURE = DateTimeFormatter.ofPattern("HH:mm");
 
-    // ── Colonnes ──────────────────────────────────────────────────────────
+    // Colonnes
     private static final String[] COLS = {
             "N°", "Date", "Début", "Fin",
             "Étudiant", "Filière", "Sujet",
@@ -37,7 +37,6 @@ public class PlanningPanel extends JPanel {
             155, 155, 155, 75
     };
 
-    // ── Composants ────────────────────────────────────────────────────────
     private DefaultTableModel           tableModel;
     private JTable                      table;
     private TableRowSorter<DefaultTableModel> sorter;
@@ -45,7 +44,6 @@ public class PlanningPanel extends JPanel {
     private JTextField                  champRecherche;
     private int                         hoveredRow = -1;
 
-    // ═════════════════════════════════════════════════════════════════════
     public PlanningPanel() {
         setLayout(new BorderLayout(12, 12));
         setBackground(BG);
@@ -56,16 +54,15 @@ public class PlanningPanel extends JPanel {
         add(buildFooter(),     BorderLayout.SOUTH);
     }
 
-    // ═════════════════════════════════════════════════════════════════════
     //  HEADER
-    // ═════════════════════════════════════════════════════════════════════
+
     private JPanel buildHeader() {
         JPanel p = new RoundedPanel(25);
         p.setLayout(new BorderLayout(16, 0));
         p.setBackground(HEADER_BG);
         p.setBorder(new EmptyBorder(18, 22, 18, 22));
 
-        JLabel titre = new JLabel("📅  Planning des Soutenances");
+        JLabel titre = new JLabel("Planning des Soutenances");
         titre.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titre.setForeground(HEADER_FG);
 
@@ -83,10 +80,10 @@ public class PlanningPanel extends JPanel {
 
         // placeholder manuel
         champRecherche.setForeground(Color.GRAY);
-        champRecherche.setText(" Rechercher...");
+        champRecherche.setText(" Rechercher");
         champRecherche.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
-                if (champRecherche.getText().equals(" Rechercher...")) {
+                if (champRecherche.getText().equals(" Rechercher")) {
                     champRecherche.setText("");
                     champRecherche.setForeground(Color.BLACK);
                 }
@@ -94,7 +91,7 @@ public class PlanningPanel extends JPanel {
             public void focusLost(FocusEvent e) {
                 if (champRecherche.getText().isBlank()) {
                     champRecherche.setForeground(Color.GRAY);
-                    champRecherche.setText(" Rechercher...");
+                    champRecherche.setText(" Rechercher");
                     if (sorter != null) sorter.setRowFilter(null);
                 }
             }
@@ -115,9 +112,7 @@ public class PlanningPanel extends JPanel {
         return p;
     }
 
-    // ═════════════════════════════════════════════════════════════════════
     //  CARD + TABLE
-    // ═════════════════════════════════════════════════════════════════════
     private JPanel buildCard() {
         JPanel card = new RoundedPanel(25);
         card.setLayout(new BorderLayout());
@@ -126,7 +121,7 @@ public class PlanningPanel extends JPanel {
                 new ShadowBorder(),
                 new EmptyBorder(16, 16, 16, 16)));
 
-        // ── Modèle ────────────────────────────────────────────────────────
+
         tableModel = new DefaultTableModel(COLS, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
             @Override public Class<?> getColumnClass(int c) {
@@ -136,7 +131,7 @@ public class PlanningPanel extends JPanel {
 
         sorter = new TableRowSorter<>(tableModel);
 
-        // ── Table ─────────────────────────────────────────────────────────
+
         table = new JTable(tableModel) {
             @Override
             public Component prepareRenderer(TableCellRenderer r, int row, int col) {
@@ -173,7 +168,7 @@ public class PlanningPanel extends JPanel {
             }
         });
 
-        // ── Header ────────────────────────────────────────────────────────
+        // Header
         JTableHeader header = table.getTableHeader();
         header.setPreferredSize(new Dimension(0, 45));
         header.setReorderingAllowed(false);
@@ -214,9 +209,8 @@ public class PlanningPanel extends JPanel {
         return card;
     }
 
-    // ═════════════════════════════════════════════════════════════════════
+
     //  FOOTER
-    // ═════════════════════════════════════════════════════════════════════
     private JPanel buildFooter() {
         JPanel footer = new RoundedPanel(20);
         footer.setLayout(new FlowLayout(FlowLayout.LEFT, 18, 10));
@@ -224,7 +218,7 @@ public class PlanningPanel extends JPanel {
         footer.add(legendItem(ROW_EVEN, "Ligne paire"));
         footer.add(legendItem(ROW_ODD,  "Ligne impaire"));
         footer.add(legendItem(HOVER,    "Survol"));
-        JLabel hint = new JLabel("  💡 Clic en-tête = tri   •   🔍 Recherche par étudiant, salle, encadrant...");
+        JLabel hint = new JLabel(" Clic en-tête = tri   •   🔍 Recherche par étudiant, salle, encadrant...");
         hint.setFont(new Font("Segoe UI", Font.ITALIC, 12));
         hint.setForeground(new Color(0x546E7A));
         footer.add(hint);
@@ -244,9 +238,6 @@ public class PlanningPanel extends JPanel {
         return item;
     }
 
-    // ═════════════════════════════════════════════════════════════════════
-    //  API PUBLIQUE — appelée depuis MainWindow
-    // ═════════════════════════════════════════════════════════════════════
     public void setPlanning(Planning planning) {
         tableModel.setRowCount(0);
 
@@ -278,24 +269,22 @@ public class PlanningPanel extends JPanel {
             });
         }
 
-        infoLabel.setText(liste.size() + " soutenance(s)");
+        infoLabel.setText(liste.size() + " soutenances");
     }
 
-    // ── Filtre texte ──────────────────────────────────────────────────────
+    //  Filtre texte
     private void filtrer() {
         String txt = champRecherche.getText().trim();
-        if (txt.isBlank() || txt.equals("🔍 Rechercher...")) {
+        if (txt.isBlank() || txt.equals("Rechercher")) {
             sorter.setRowFilter(null);
-            infoLabel.setText(tableModel.getRowCount() + " soutenance(s)");
+            infoLabel.setText(tableModel.getRowCount() + " soutenances");
         } else {
             sorter.setRowFilter(RowFilter.regexFilter("(?i)" + txt));
             infoLabel.setText(table.getRowCount() + " résultat(s)");
         }
     }
 
-    // ═════════════════════════════════════════════════════════════════════
-    //  CLASSES INTERNES
-    // ═════════════════════════════════════════════════════════════════════
+
     class RoundedPanel extends JPanel {
         private final int r;
         RoundedPanel(int r) { this.r = r; setOpaque(false); }

@@ -20,13 +20,11 @@ public class PdfFicheWriter {
     private static final DateTimeFormatter FMT_DATE  = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FMT_HEURE = DateTimeFormatter.ofPattern("HH:mm");
 
-    // Dimensions A4
     private static final float PAGE_W = PDRectangle.A4.getWidth();   // 595
     private static final float PAGE_H = PDRectangle.A4.getHeight();  // 842
     private static final float MARGIN  = 40f;
     private static final float COL_W   = PAGE_W - 2 * MARGIN;
 
-    // Couleurs (R,G,B 0..1)
     private static final float[] VERT_FONCE  = {0.11f, 0.37f, 0.13f};  // #1B5E20
     private static final float[] VERT_MOY    = {0.18f, 0.49f, 0.20f};  // #2E7D32
     private static final float[] VERT_CLAIR  = {0.91f, 0.96f, 0.91f};  // #E8F5E9
@@ -71,7 +69,6 @@ public class PdfFicheWriter {
         return creees;
     }
 
-    //  GÉNÉRATION D'UNE FICHE PDF
     private void genererPdf(Soutenance s, String chemin) throws IOException {
 
         try (PDDocument doc = new PDDocument()) {
@@ -90,14 +87,14 @@ public class PdfFicheWriter {
                 y = dessinerBandeTitre(cs, y,
                         "FICHE DE SOUTENANCE", fontBold, 18, VERT_FONCE, BLANC);
 
-                // Sous-titre  nom étudiant
+                // Sous-titre  nom Etudiant
                 y = dessinerBandeTitre(cs, y,
                         val(s.getEtudiant().getNom()) + " " + val(s.getEtudiant().getPrenom()),
                         fontBold, 12, VERT_MOY, BLANC);
 
                 y -= 10;
 
-                // Section 1 Informations étudiant
+                // Section 1 Informations Etudiant
                 y = dessinerSectionHeader(cs, y, "INFORMATIONS ÉTUDIANT", fontBold);
                 y = dessinerLigne(cs, y, "CNE",              val(s.getEtudiant().getCne()), fontBold, fontNormal);
                 y = dessinerLigne(cs, y, "Nom complet",      val(s.getEtudiant().getNom()) + " " + val(s.getEtudiant().getPrenom()), fontBold, fontNormal);
@@ -107,7 +104,7 @@ public class PdfFicheWriter {
 
                 y -= 8;
 
-                //Section 2 Créneau & Salle
+                //Section 2 Créneau ET Salle
                 y = dessinerSectionHeader(cs, y, "CRÉNEAU & SALLE", fontBold);
                 y = dessinerLigne(cs, y, "Date",        s.getCreneau().getDate().format(FMT_DATE), fontBold, fontNormal);
                 y = dessinerLigne(cs, y, "Heure début", s.getCreneau().getHeureDebut().format(FMT_HEURE), fontBold, fontNormal);
